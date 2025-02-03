@@ -9,12 +9,21 @@
 #define TFT_VER_RES   320
 #define TFT_ROTATION  LV_DISPLAY_ROTATION_0
 
+#define UP_BUTTON_PIN 34
+#define DOWN_BUTTON_PIN 35
+#define DEBOUNCE_TIME 40
+#define HOLD_TIME 100
+#define REPEAT_RATE 30
+#define SCROLL_AMOUNT 40
+
 #define DRAW_BUF_SIZE (TFT_HOR_RES * TFT_VER_RES / 10 * (LV_COLOR_DEPTH / 8))
 static uint32_t draw_buf[DRAW_BUF_SIZE / 16];
 objects_t objects;
 //static uint32_t *draw_buf;
 
 TFT_eSPI tft = TFT_eSPI();
+void TableParameters(objects_t* ui);
+void ButtonScroll(objects_t *ui);
 
 void my_disp_flush( lv_display_t *disp, const lv_area_t *area, uint8_t * px_map)
 {   
@@ -61,39 +70,113 @@ void setup()
     lv_display_set_buffers(disp, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
   ui_init();
-
-    lv_table_set_column_count(objects.order_table, 3);
-    lv_table_set_column_width(objects.order_table, 0, 160);
-    lv_table_set_column_width(objects.order_table, 1, 160);
-    lv_table_set_column_width(objects.order_table, 2, 160);
-
-    lv_table_set_cell_value(objects.order_table,0,0,"Table 1");
-    lv_table_set_cell_value(objects.order_table,0,1,"Bill");
-    lv_table_set_cell_value(objects.order_table,0,2,"2");
-
-    lv_table_set_cell_value(objects.order_table,1,0,"Table 2");
-    lv_table_set_cell_value(objects.order_table,1,1,"Call");
-    lv_table_set_cell_value(objects.order_table,1,2,"5");
-
-    lv_table_set_cell_value(objects.order_table,2,0,"Table 3");
-    lv_table_set_cell_value(objects.order_table,2,1,"Served");
-    lv_table_set_cell_value(objects.order_table,2,2,"0");
-
-    lv_table_set_cell_value(objects.order_table,3,0,"Table 4");
-    lv_table_set_cell_value(objects.order_table,3,1,"Cancel");
-    lv_table_set_cell_value(objects.order_table,3,2,"1");
-
-    lv_table_set_cell_value(objects.order_table,4,0,"Table 5");
-    lv_table_set_cell_value(objects.order_table,4,1,"Call");
-    lv_table_set_cell_value(objects.order_table,4,2,"3");
-
-  lv_table_set_row_count(objects.order_table, 50);
+  TableParameters(&objects);
+  
+  pinMode(UP_BUTTON_PIN, INPUT_PULLDOWN);
+  pinMode(DOWN_BUTTON_PIN, INPUT_PULLDOWN);
   //lv_timer_handler();
   //lv_task_handler();
 }
 void loop()
 {
+ 
   lv_timer_handler();
   lv_task_handler();
-  delay(2);
+  vTaskDelay(pdMS_TO_TICKS(10)); //10ms
+
+  ButtonScroll(&objects);
+}
+
+void ButtonScroll(objects_t *ui)
+{
+ static uint8_t LastUpButtonState = LOW;
+ static uint8_t LastDownButtonState = LOW;
+
+ static unsigned long LastUpPressTime = 0;
+ static unsigned long LastDownPressTime = 0;
+
+static bool UpHolding = false;
+static bool DownHolding = false;
+
+ unsigned long CurrentTime = millis();
+
+ uint8_t  UpButtonState = digitalRead(UP_BUTTON_PIN);
+ uint8_t  DownButtonState = digitalRead(DOWN_BUTTON_PIN);
+  
+  if(UpButtonState == HIGH)
+  {
+     if(LastUpButtonState == LOW && (CurrentTime - LastUpPressTime > DEBOUNCE_TIME)) // Up Button pressed
+     {
+        /*First press*/
+        lv_obj_scroll_by(ui->order_table,0, SCROLL_AMOUNT, LV_ANIM_ON);
+        LastUpPressTime = CurrentTime;
+        UpHolding = true;
+     }
+     else if(UpHolding && ((CurrentTime - LastUpPressTime) > HOLD_TIME))
+     {
+        /*Auto scrolling after long press*/
+        if(((CurrentTime - LastUpPressTime) % REPEAT_RATE) == 0)
+        {
+          lv_obj_scroll_by(ui->order_table,0, SCROLL_AMOUNT, LV_ANIM_ON);
+        }
+     }
+  }
+  else
+  {
+    UpHolding = false;
+  }
+
+  if(DownButtonState == HIGH)
+  {
+     if(LastDownButtonState == LOW && (CurrentTime - LastDownPressTime > DEBOUNCE_TIME)) // Up Button pressed
+     {
+        lv_obj_scroll_by(ui->order_table,0, -SCROLL_AMOUNT, LV_ANIM_ON);
+        LastDownPressTime = CurrentTime;
+        DownHolding = true;
+     }
+     else if(DownHolding && ((CurrentTime - LastDownPressTime) > HOLD_TIME))
+     {
+         if(((CurrentTime - LastDownPressTime) % REPEAT_RATE) == 0)
+         {
+            lv_obj_scroll_by(ui->order_table,0, -SCROLL_AMOUNT, LV_ANIM_ON);
+         }
+     }
+  }
+  else
+  {
+    DownHolding = false;
+  }
+
+  LastUpButtonState = UpButtonState;
+  LastDownButtonState = DownButtonState;
+}
+
+void TableParameters(objects_t* ui)
+{
+    lv_table_set_row_count(objects.order_table, 50);
+    lv_table_set_column_count(ui->order_table, 3);
+
+    lv_table_set_column_width(ui->order_table, 0, 160);
+    lv_table_set_column_width(ui->order_table, 1, 160);
+    lv_table_set_column_width(ui->order_table, 2, 160);
+
+    lv_table_set_cell_value(ui->order_table,0,0,"Table 1");
+    lv_table_set_cell_value(ui->order_table,0,1,"Bill");
+    lv_table_set_cell_value(ui->order_table,0,2,"2");
+
+    lv_table_set_cell_value(ui->order_table,1,0,"Table 2");
+    lv_table_set_cell_value(ui->order_table,1,1,"Call");
+    lv_table_set_cell_value(ui->order_table,1,2,"5");
+
+    lv_table_set_cell_value(ui->order_table,2,0,"Table 3");
+    lv_table_set_cell_value(ui->order_table,2,1,"Served");
+    lv_table_set_cell_value(ui->order_table,2,2,"0");
+
+    lv_table_set_cell_value(ui->order_table,3,0,"Table 4");
+    lv_table_set_cell_value(ui->order_table,3,1,"Cancel");
+    lv_table_set_cell_value(ui->order_table,3,2,"1");
+
+    lv_table_set_cell_value(ui->order_table,4,0,"Table 5");
+    lv_table_set_cell_value(ui->order_table,4,1,"Call");
+    lv_table_set_cell_value(ui->order_table,4,2,"3");
 }
