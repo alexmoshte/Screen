@@ -17,8 +17,8 @@ typedef struct _objects_t {
     lv_obj_t *tab_id_text;
     lv_obj_t *order_pan;
     lv_obj_t *order_text;
-    lv_obj_t *req_no_pan;
-    lv_obj_t *req_no_text;
+    lv_obj_t *timestamp_pan;
+    lv_obj_t *timestamp;
 } objects_t;
 
 extern objects_t objects;

@@ -37,7 +37,7 @@ void create_screen_main() {
                     // header_title
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.header_title = obj;
-                    lv_obj_set_pos(obj, 138, -8);
+                    lv_obj_set_pos(obj, 143, -8);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_label_set_text(obj, "ORDER QUEUE");
                     lv_obj_set_style_text_font(obj, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -65,7 +65,7 @@ void create_screen_main() {
             lv_obj_set_style_border_color(obj, lv_color_hex(0xffd74242), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_radius(obj, 4, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_border_width(obj, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_font(obj, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_12, LV_PART_MAIN | LV_STATE_DEFAULT);
         }
         {
             // tab_ID_pan
@@ -111,22 +111,22 @@ void create_screen_main() {
             }
         }
         {
-            // req_No_pan
+            // Timestamp_pan
             lv_obj_t *obj = lv_obj_create(parent_obj);
-            objects.req_no_pan = obj;
+            objects.timestamp_pan = obj;
             lv_obj_set_pos(obj, 319, 40);
             lv_obj_set_size(obj, 161, 35);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffd74242), LV_PART_MAIN | LV_STATE_DEFAULT);
             {
                 lv_obj_t *parent_obj = obj;
                 {
-                    // req_No_text
+                    // Timestamp
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.req_no_text = obj;
+                    objects.timestamp = obj;
                     lv_obj_set_pos(obj, 3, -11);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                    lv_label_set_text(obj, "Requests");
-                    lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text(obj, "Time\n");
+                    lv_obj_set_style_text_font(obj, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
                 }
             }
         }
